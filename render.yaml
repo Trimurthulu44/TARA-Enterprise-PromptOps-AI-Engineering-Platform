@@ -1,0 +1,56 @@
+# Render Infrastructure-as-Code Blueprint for TARA Enterprise
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ---------------------------------------------------------------------------
+  # TARA Backend Web Service (Java 21 / Spring Boot 3.3.4)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: tara-backend
+    runtime: docker
+    dockerfilePath: ./tara-backend/Dockerfile
+    dockerContext: ./tara-backend
+    plan: starter
+    region: oregon
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: tara-postgres
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: tara-postgres
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: tara-postgres
+          property: password
+      - key: TARA_JWT_SECRET
+        value: EnterprisePromptOpsSecretKeyMustBeAtLeast256BitsLongForHMACSHA512Security
+
+  # ---------------------------------------------------------------------------
+  # TARA AI Engine Microservice (FastAPI / Python 3.11)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: tara-ai
+    runtime: docker
+    dockerfilePath: ./tara-ai-service/Dockerfile
+    dockerContext: ./tara-ai-service
+    plan: starter
+    region: oregon
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+
+databases:
+  # ---------------------------------------------------------------------------
+  # Managed PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  - name: tara-postgres
+    databaseName: tara_db
+    user: tara_user
+    plan: starter
+    region: oregon
+    postgresMajorVersion: 16

@@ -28,5 +28,5 @@ USER tara
 
 EXPOSE 8090
 
-# Production ASGI server launch
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8090", "--workers", "2"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8090} --workers 2"]
+
