@@ -45,6 +45,7 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)) // For H2 console
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+                    "/",
                     "/api/v1/auth/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
