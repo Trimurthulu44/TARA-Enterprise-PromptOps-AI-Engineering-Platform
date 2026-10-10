@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build -w tara-frontend",
+  "outputDirectory": "tara-frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "tara-platform-root",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "tara-frontend"
+  ],
+  "scripts": {
+    "build": "npm run build -w tara-frontend"
+  }
+}
