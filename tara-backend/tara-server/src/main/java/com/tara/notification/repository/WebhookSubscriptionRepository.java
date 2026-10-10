@@ -1,0 +1,14 @@
+package com.tara.notification.repository;
+
+import com.tara.notification.entity.WebhookSubscription;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface WebhookSubscriptionRepository extends JpaRepository<WebhookSubscription, UUID> {
+    List<WebhookSubscription> findByOrganizationId(UUID organizationId);
+    List<WebhookSubscription> findByOrganizationIdAndIsActiveTrue(UUID organizationId);
+}

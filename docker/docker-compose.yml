@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: tara-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: tara_db
+      POSTGRES_USER: tara_user
+      POSTGRES_PASSWORD: tara_secret_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-extensions.sql:/docker-entrypoint-initdb.d/init-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tara_user -d tara_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tara-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: tara-redis
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tara-network
+
+  tara-backend:
+    build:
+      context: ../tara-backend
+      dockerfile: Dockerfile
+    container_name: tara-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tara_db
+      SPRING_DATASOURCE_USERNAME: tara_user
+      SPRING_DATASOURCE_PASSWORD: tara_secret_2026
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      TARA_AI_SERVICE_URL: http://tara-ai:8090
+      TARA_JWT_SECRET: EnterprisePromptOpsSecretKeyMustBeAtLeast256BitsLongForHMACSHA512Security
+    ports:
+      - "8080:8080"
+    networks:
+      - tara-network
+
+  tara-ai:
+    build:
+      context: ../tara-ai-service
+      dockerfile: Dockerfile
+    container_name: tara-ai
+    restart: always
+    environment:
+      TARA_BACKEND_URL: http://tara-backend:8080
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "8090:8090"
+    networks:
+      - tara-network
+
+  tara-frontend:
+    build:
+      context: ../tara-frontend
+      dockerfile: Dockerfile
+    container_name: tara-frontend
+    restart: always
+    depends_on:
+      - tara-backend
+    ports:
+      - "80:80"
+    networks:
+      - tara-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  tara-network:
+    driver: bridge

@@ -1,0 +1,82 @@
+# ==============================================================================
+# TARA Enterprise - Root .gitignore
+# ==============================================================================
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Environment & Local Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Build outputs & caches - Node / Frontend
+tara-frontend/node_modules/
+node_modules/
+tara-frontend/dist/
+dist/
+tara-frontend/.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs & caches - Java / Maven
+tara-backend/target/
+tara-backend/tara-common/target/
+tara-backend/tara-server/target/
+target/
+*.class
+*.jar
+*.war
+*.ear
+!tara-backend/.mvn/wrapper/maven-wrapper.jar
+
+# Build outputs & caches - Python / AI Service
+tara-ai-service/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+
+# Logs
+*.log
+logs/
+
+# Database / Docker Volume mount caches
+postgres_data/
+redis_data/

@@ -1,0 +1,90 @@
+name: TARA CI / CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  backend-ci:
+    name: Backend Build & Test (Java 21 / Spring Boot 3.3)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Run Backend Unit & Integration Tests
+        working-directory: tara-backend
+        run: |
+          chmod +x mvnw || true
+          mvn clean test -B
+
+      - name: Package Backend Artifact
+        working-directory: tara-backend
+        run: mvn package -DskipTests -B
+
+  frontend-ci:
+    name: Frontend Build & Typecheck (React 18 / TypeScript / Vite)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: tara-frontend/package.json
+
+      - name: Install Frontend Dependencies
+        working-directory: tara-frontend
+        run: npm ci || npm install
+
+      - name: Verify TypeScript & Build Vite Production Bundle
+        working-directory: tara-frontend
+        run: npm run build
+
+  ai-service-ci:
+    name: AI Service Validation (FastAPI / Python 3.11)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: tara-ai-service/requirements.txt
+
+      - name: Install Python Dependencies
+        working-directory: tara-ai-service
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validate Python Syntax & Imports
+        working-directory: tara-ai-service
+        run: |
+          python -c "import app.main; print('FastAPI main module imported successfully')"
+
+  docker-compose-validate:
+    name: Docker Compose Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: |
+          docker compose -f docker/docker-compose.yml config --quiet
